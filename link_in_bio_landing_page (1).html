@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link-in-Bio Landing Page</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Retro Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        pixel: ['"Silkscreen"', 'monospace'],
+                        arcade: ['"Press Start 2P"', 'cursive'],
+                    },
+                    colors: {
+                        brand: {
+                            tiktok: '#FF0050',
+                            instagram: '#E1306C',
+                            facebook: '#1877F2'
+                        }
+                    },
+                    animation: {
+                        'pixel-float': 'pixelFloat 2s steps(4, end) infinite',
+                        'pixel-pulse': 'pixelPulse 1.5s steps(2, end) infinite'
+                    },
+                    keyframes: {
+                        pixelFloat: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        pixelPulse: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.6' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Retro Game Pixel Art Styling */
+        body {
+            font-family: 'Silkscreen', monospace;
+            image-rendering: pixelated;
+        }
+
+        #spaceCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            image-rendering: pixelated;
+        }
+
+        /* Retro Arcade Card & Pixel Borders */
+        .pixel-box {
+            background: rgba(15, 12, 29, 0.85);
+            backdrop-filter: blur(8px);
+            border: 4px solid #f472b6;
+            box-shadow: 0 0 0 2px #000, 6px 6px 0px 0px #8b5cf6, 10px 10px 0px 0px #000;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .pixel-box:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 0 0 0 2px #000, 8px 8px 0px 0px #ec4899, 12px 12px 0px 0px #000;
+            border-color: #38bdf8;
+        }
+
+        .pixel-button {
+            border: 3px solid #000;
+            box-shadow: 3px 3px 0px #000;
+        }
+        .pixel-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #000;
+        }
+
+        .pixel-avatar-frame {
+            border: 4px solid #38bdf8;
+            outline: 4px solid #000;
+            box-shadow: 0 0 0 8px rgba(244, 114, 182, 0.4), 6px 6px 0px 8px #000;
+        }
+
+        /* Custom Pixel Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ec4899;
+            border: 2px solid #000;
+        }
+
+        /* Day / Light Mode Overrides */
+        html:not(.dark) body {
+            background-color: #38bdf8;
+            color: #0f172a;
+        }
+
+        html:not(.dark) .pixel-box {
+            background: rgba(255, 255, 255, 0.94);
+            border-color: #0284c7;
+            box-shadow: 0 0 0 2px #000, 6px 6px 0px 0px #0369a1, 10px 10px 0px 0px #000;
+        }
+
+        html:not(.dark) .pixel-box:hover {
+            border-color: #e11d48;
+            box-shadow: 0 0 0 2px #000, 8px 8px 0px 0px #be123c, 12px 12px 0px 0px #000;
+        }
+
+        html:not(.dark) #displayHandle {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #0369a1;
+            border-color: #0284c7;
+        }
+
+        html:not(.dark) #displayBio {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #431407;
+            border-color: #f97316;
+        }
+
+        html:not(.dark) .link-title {
+            color: #b91c1c !important;
+        }
+
+        html:not(.dark) .link-subtitle {
+            color: #1e293b !important;
+        }
+
+        html:not(.dark) #displayName {
+            color: #991b1b;
+            text-shadow: 2px 2px 0px #fef08a;
+        }
+
+        html:not(.dark) footer p {
+            color: #0f172a;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-pixel transition-colors duration-300 flex flex-col items-center justify-between p-4 sm:p-6 select-none relative overflow-x-hidden">
+
+    <!-- Pixel Space / Day Sky Canvas Background -->
+    <canvas id="spaceCanvas"></canvas>
+
+    <!-- Navigation / Top Utility Bar -->
+    <header class="w-full max-w-md flex items-center justify-between py-2 px-1 mb-4 z-10">
+        <button id="copyProfileBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-none text-xs font-pixel bg-pink-600 hover:bg-pink-500 text-white pixel-button active:scale-95 transition-all">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+            <span>SHARE</span>
+        </button>
+
+        <div class="flex items-center gap-3">
+            <!-- Theme Toggle Button -->
+            <button id="themeToggleBtn" class="p-2 bg-cyan-600 hover:bg-cyan-500 text-white pixel-button transition-all" title="Toggle Theme Mode">
+                <i id="themeIcon" data-lucide="sun" class="w-4 h-4 text-amber-300"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-md flex-1 flex flex-col items-center z-10">
+        
+        <!-- Profile Avatar & Info -->
+        <div class="text-center flex flex-col items-center mb-8 w-full">
+            <div class="relative group mb-5">
+                <img id="displayAvatar" src="https://scontent.fmnl33-3.fna.fbcdn.net/v/t39.30808-6/783028337_28431295056463849_2990070972201265142_n.jpg?stp=dst-jpg_tt6&cstp=mx736x735&ctp=s736x735&_nc_cat=111&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGG-HXy7BvC_RWDE6m82lWlvFkJZxz0OQu8WQlnHPQ5C_eSS_2nzNlP6wtufP7qwcEmkryoN-sUUOkpS_DGCLo5&_nc_ohc=mmW7bknFeJwQ7kNvwEbR4ql&_nc_oc=AdqgV0MZef3gqzP1VDme2vYaWYV3PRZQUOFIjwqxlo0H3DQzs_9fGFupcPaNTO6PmfM&_nc_zt=23&_nc_ht=scontent.fmnl33-3.fna&_nc_gid=40THchU4p-7nSvNcUmLgBg&_nc_ss=7b2a8&oh=00_AQMukp0SMj9I1elzcq_ai7Me4i079rpO7fyugBrjFNGaaA&oe=6AC59796" 
+                     alt="Profile Picture" 
+                     class="w-28 h-28 sm:w-32 sm:h-32 pixel-avatar-frame object-cover animate-pixel-float"
+                     onerror="this.src='https://placehold.co/128x128/9333ea/ffffff?text=Kyut'">
+                
+                <span class="absolute -bottom-2 -right-2 px-2 py-0.5 bg-amber-400 text-black border-2 border-black text-[10px] font-arcade uppercase shadow-md flex items-center gap-1">👑 BOSS</span>
+            </div>
+
+            <h1 id="displayName" class="text-lg sm:text-xl font-arcade tracking-wide text-pink-400 flex items-center justify-center gap-2 drop-shadow-[2px_2px_0px_#000]">
+                ALIEN CAT
+            </h1>
+            <p id="displayHandle" class="text-xs font-pixel text-cyan-300 mt-2 bg-slate-900/80 px-3 py-1 border border-cyan-500/50">INTERGALACTIC KYUT</p>
+            <p id="displayBio" class="text-xs text-purple-200 mt-3 max-w-xs sm:max-w-sm leading-relaxed px-2 bg-slate-900/90 p-3 border-2 border-dashed border-purple-500/50 shadow-inner">
+                Spreading intergalactic cuteness across the pixel galaxy! 👾✨
+            </p>
+        </div>
+
+        <!-- Links List Container -->
+        <div id="linksContainer" class="w-full flex flex-col gap-5 mb-8">
+            <!-- Dynamic Pixel Links rendered by JS -->
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-md text-center py-4 z-10">
+        <p class="text-[10px] text-slate-400 flex items-center justify-center gap-2">
+            <span>[PRESS START]</span>
+            <span class="text-pink-400">LinkBio 8-Bit Edition</span>
+        </p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-200 pointer-events-none z-50 flex items-center gap-2 px-4 py-3 bg-cyan-400 text-black border-4 border-black text-xs font-pixel shadow-[4px_4px_0px_#000]">
+        <i data-lucide="check-square" class="w-4 h-4"></i>
+        <span id="toastMessage">Link copied to clipboard!</span>
+    </div>
+
+    <script>
+        // Default Link Data
+        const DEFAULT_DATA = {
+            name: "ALIEN CAT",
+            handle: "INTERGALACTIC KYUT",
+            bio: "Spreading intergalactic cuteness across the pixel galaxy! 👾✨",
+            avatar: "https://scontent.fmnl33-3.fna.fbcdn.net/v/t39.30808-6/783028337_28431295056463849_2990070972201265142_n.jpg?stp=dst-jpg_tt6&cstp=mx736x735&ctp=s736x735&_nc_cat=111&_nc_map=urlgen_bucketless&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGG-HXy7BvC_RWDE6m82lWlvFkJZxz0OQu8WQlnHPQ5C_eSS_2nzNlP6wtufP7qwcEmkryoN-sUUOkpS_DGCLo5&_nc_ohc=mmW7bknFeJwQ7kNvwEbR4ql&_nc_oc=AdqgV0MZef3gqzP1VDme2vYaWYV3PRZQUOFIjwqxlo0H3DQzs_9fGFupcPaNTO6PmfM&_nc_zt=23&_nc_ht=scontent.fmnl33-3.fna&_nc_gid=40THchU4p-7nSvNcUmLgBg&_nc_ss=7b2a8&oh=00_AQMukp0SMj9I1elzcq_ai7Me4i079rpO7fyugBrjFNGaaA&oe=6AC59796",
+            links: [
+                {
+                    id: "tiktok",
+                    title: "TikTok 👾",
+                    subtitle: "Cosmic 8-bit short videos & space trends",
+                    url: "https://tiktok.com/@almeown_hihe",
+                    icon: "tiktok",
+                    badgeColor: "bg-pink-500 text-black border-2 border-black",
+                    clicks: 2048
+                },
+                {
+                    id: "instagram",
+                    title: "Instagram 🪐",
+                    subtitle: "Pixel aesthetic photos & space logs",
+                    url: "https://www.instagram.com/jsltf.2?stkn=Nzl6aDZ6MGs5NTB1",
+                    icon: "instagram",
+                    badgeColor: "bg-purple-500 text-white border-2 border-black",
+                    clicks: 3890
+                },
+                {
+                    id: "facebook",
+                    title: "Facebook Page 🚀",
+                    subtitle: "Join the Starship crew & updates",
+                    url: "https://www.facebook.com/share/1HnNPtyxbv/",
+                    icon: "facebook",
+                    badgeColor: "bg-cyan-400 text-black border-2 border-black",
+                    clicks: 1205
+                }
+            ]
+        };
+
+        // Official Brand Logos (SVG Vector Icons)
+        const BRAND_SVGS = {
+            tiktok: `<svg class="w-5 h-5 fill-current text-cyan-300 group-hover:text-pink-400 transition-colors" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .58.04.86.12V9.3a6.32 6.32 0 0 0-.86-.06 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.28 8.28 0 0 0 4.84 1.55V6.79a4.85 4.85 0 0 1-1.06-.1z"/></svg>`,
+            instagram: `<svg class="w-5 h-5 fill-current text-pink-400 group-hover:text-cyan-300 transition-colors" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`,
+            facebook: `<svg class="w-5 h-5 fill-current text-blue-400 group-hover:text-cyan-300 transition-colors" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`
+        };
+
+        let appData = JSON.parse(localStorage.getItem('linkBioData')) || DEFAULT_DATA;
+        appData.links = appData.links.filter(link => link.id !== 'youtube' && link.id !== 'website');
+
+        function initSpaceCanvas() {
+            const canvas = document.getElementById('spaceCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let width, height;
+            const pixelSize = 3;
+
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // --- Night Space Variables ---
+            const numStars = 120;
+            const stars = [];
+            const darkStarColors = ['#ffffff', '#f472b6', '#38bdf8', '#c084fc', '#fde047'];
+
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.floor(Math.random() * 2 + 1) * pixelSize,
+                    color: darkStarColors[Math.floor(Math.random() * darkStarColors.length)],
+                    blinkSpeed: Math.random() * 0.05 + 0.01,
+                    alpha: Math.random()
+                });
+            }
+
+            const meteors = [];
+            function spawnMeteor() {
+                const startX = Math.random() * (width + 200) - 100;
+                meteors.push({
+                    x: startX,
+                    y: -20,
+                    dx: -(Math.random() * 3 + 2) * pixelSize,
+                    dy: (Math.random() * 4 + 3) * pixelSize,
+                    length: Math.floor(Math.random() * 12 + 8),
+                    size: Math.floor(Math.random() * 2 + 2) * pixelSize,
+                    life: 1,
+                    decay: Math.random() * 0.01 + 0.005,
+                    color: Math.random() > 0.5 ? '#f472b6' : '#38bdf8'
+                });
+            }
+
+            setInterval(() => {
+                if (document.documentElement.classList.contains('dark') && Math.random() < 0.7) {
+                    spawnMeteor();
+                }
+            }, 800);
+
+            // --- Day Sky Animated Objects ---
+            // 1. Satellites
+            const satellites = [
+                { x: 50, y: 80, speed: 0.6, panelPulse: 0 },
+                { x: width * 0.6, y: 140, speed: 0.4, panelPulse: 0 }
+            ];
+
+            // 2. Iron Man Flying Sprite
+            const ironMan = {
+                x: -100,
+                y: 180,
+                speedX: 2.8,
+                speedY: -0.3,
+                hoverAngle: 0
+            };
+
+            // 3. Infinity War Ring Q-Ship
+            const qShip = {
+                x: width * 0.75,
+                y: 220,
+                angle: 0,
+                hoverY: 0
+            };
+
+            let sunRayAngle = 0;
+
+            function renderDayBackground() {
+                // Day Gradient Background
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+                skyGrad.addColorStop(0, '#38bdf8');
+                skyGrad.addColorStop(0.6, '#7dd3fc');
+                skyGrad.addColorStop(1, '#bae6fd');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, width, height);
+
+                // --- Pixel Sun ---
+                const sunX = Math.min(width - 90, width * 0.82);
+                const sunY = 90;
+                
+                // Rotating Sun Rays
+                sunRayAngle += 0.01;
+                ctx.save();
+                ctx.translate(sunX, sunY);
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.35)';
+                for (let r = 0; r < 8; r++) {
+                    ctx.rotate(Math.PI / 4);
+                    ctx.fillRect(-28, -28, 56, 12);
+                }
+                ctx.restore();
+
+                // Sun Core Rings
+                ctx.fillStyle = '#fde047';
+                ctx.fillRect(sunX - 30, sunY - 30, 60, 60);
+                ctx.fillStyle = '#facc15';
+                ctx.fillRect(sunX - 22, sunY - 22, 44, 44);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(sunX - 12, sunY - 12, 24, 24);
+
+                // Pixel Clouds
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fillRect(40, 110, 90, 24);
+                ctx.fillRect(55, 96, 60, 20);
+
+                ctx.fillRect(width - 180, 220, 110, 28);
+                ctx.fillRect(width - 150, 204, 70, 22);
+
+                // --- Infinity War Circular Q-Ship (Thanos / Ebony Maw Donut Ship) ---
+                qShip.angle += 0.015;
+                qShip.hoverY = Math.sin(qShip.angle) * 8;
+                const qsX = width < 640 ? width * 0.82 : width * 0.78;
+                const qsY = 190 + qShip.hoverY;
+
+                ctx.save();
+                ctx.translate(qsX, qsY);
+                ctx.rotate(qShip.angle * 0.2);
+
+                // Outer Ring Hull
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.arc(0, 0, 48, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Inner Cutout
+                ctx.fillStyle = skyGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glowing Thrusters & Metallic Detail
+                ctx.fillStyle = '#0284c7';
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 3) {
+                    const tx = Math.cos(a) * 38;
+                    const ty = Math.sin(a) * 38;
+                    ctx.fillRect(tx - 3, ty - 3, 7, 7);
+                }
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(-6, -6, 12, 12);
+                ctx.restore();
+
+                // Label Badge for Q-Ship
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+                ctx.fillRect(qsX - 40, qsY + 56, 80, 14);
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = '8px "Press Start 2P"';
+                ctx.fillText('Q-SHIP', qsX - 26, qsY + 67);
+
+                // --- Satellites Floating Across Sky ---
+                satellites.forEach(sat => {
+                    sat.x += sat.speed;
+                    if (sat.x > width + 50) sat.x = -60;
+                    sat.panelPulse += 0.05;
+
+                    // Metallic Body
+                    ctx.fillStyle = '#475569';
+                    ctx.fillRect(sat.x, sat.y, 16, 12);
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillRect(sat.x + 3, sat.y + 2, 10, 8);
+
+                    // Solar Panels
+                    const glow = Math.sin(sat.panelPulse) > 0 ? '#38bdf8' : '#0284c7';
+                    ctx.fillStyle = glow;
+                    ctx.fillRect(sat.x - 14, sat.y + 3, 12, 6);
+                    ctx.fillRect(sat.x + 18, sat.y + 3, 12, 6);
+
+                    // Dish Antenna & Blinking Beacon
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.fillRect(sat.x + 7, sat.y - 6, 2, 6);
+                    ctx.fillStyle = Math.sin(sat.panelPulse * 2) > 0 ? '#ef4444' : '#7f1d1d';
+                    ctx.fillRect(sat.x + 6, sat.y - 8, 4, 3);
+                });
+
+                // --- Flying Iron Man in Nanotech Armor ---
+                ironMan.x += ironMan.speedX;
+                ironMan.y += ironMan.speedY;
+                ironMan.hoverAngle += 0.08;
+                const imY = ironMan.y + Math.sin(ironMan.hoverAngle) * 4;
+
+                if (ironMan.x > width + 120) {
+                    ironMan.x = -120;
+                    ironMan.y = Math.random() * (height * 0.35) + 80;
+                }
+
+                // Thruster Tail Flames
+                ctx.fillStyle = '#f97316';
+                ctx.fillRect(ironMan.x - 28, imY + 4, 20, 4);
+                ctx.fillStyle = '#fde047';
+                ctx.fillRect(ironMan.x - 18, imY + 5, 12, 2);
+
+                // Iron Man Pixel Armor Sprite
+                // Red Suit Body
+                ctx.fillStyle = '#dc2626';
+                ctx.fillRect(ironMan.x - 8, imY, 18, 10); // torso & legs
+                ctx.fillRect(ironMan.x + 6, imY - 3, 8, 8); // head helmet
+
+                // Gold Faceplate & Accents
+                ctx.fillStyle = '#facc15';
+                ctx.fillRect(ironMan.x + 10, imY - 2, 4, 5); // mask
+                ctx.fillRect(ironMan.x - 2, imY + 2, 4, 6); // thighs
+
+                // Glowing Arc Reactor & Eyes
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(ironMan.x + 11, imY - 1, 2, 2); // eyes
+                ctx.fillRect(ironMan.x + 3, imY + 2, 3, 3); // chest arc reactor
+            }
+
+            function render() {
+                const isDark = document.documentElement.classList.contains('dark');
+
+                if (isDark) {
+                    ctx.fillStyle = '#090a15';
+                    ctx.fillRect(0, 0, width, height);
+
+                    // Cosmic Dust
+                    ctx.fillStyle = 'rgba(192, 132, 252, 0.03)';
+                    ctx.fillRect(width * 0.1, height * 0.2, 180, 180);
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.03)';
+                    ctx.fillRect(width * 0.6, height * 0.5, 240, 240);
+
+                    // Twinkling Stars
+                    stars.forEach(star => {
+                        star.alpha += star.blinkSpeed;
+                        if (star.alpha > 1 || star.alpha < 0.2) star.blinkSpeed = -star.blinkSpeed;
+
+                        ctx.fillStyle = star.color;
+                        ctx.globalAlpha = Math.abs(star.alpha);
+                        ctx.fillRect(
+                            Math.floor(star.x / pixelSize) * pixelSize,
+                            Math.floor(star.y / pixelSize) * pixelSize,
+                            star.size,
+                            star.size
+                        );
+                    });
+                    ctx.globalAlpha = 1.0;
+
+                    // Falling Meteors
+                    for (let i = meteors.length - 1; i >= 0; i--) {
+                        const m = meteors[i];
+                        m.x += m.dx;
+                        m.y += m.dy;
+                        m.life -= m.decay;
+
+                        if (m.life <= 0 || m.y > height + 50 || m.x < -100) {
+                            meteors.splice(i, 1);
+                            continue;
+                        }
+
+                        for (let t = 0; t < m.length; t++) {
+                            const tailX = m.x - (m.dx * (t / 2));
+                            const tailY = m.y - (m.dy * (t / 2));
+                            const trailAlpha = m.life * (1 - t / m.length);
+
+                            ctx.fillStyle = t === 0 ? '#ffffff' : (t < 3 ? m.color : '#ec4899');
+                            ctx.globalAlpha = Math.max(0, trailAlpha);
+                            
+                            const currentSize = Math.max(pixelSize, m.size - Math.floor(t / 3) * pixelSize);
+                            ctx.fillRect(
+                                Math.floor(tailX / pixelSize) * pixelSize,
+                                Math.floor(tailY / pixelSize) * pixelSize,
+                                currentSize,
+                                currentSize
+                            );
+                        }
+                    }
+                    ctx.globalAlpha = 1.0;
+                } else {
+                    renderDayBackground();
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            render();
+        }
+
+        const displayName = document.getElementById('displayName');
+        const displayHandle = document.getElementById('displayHandle');
+        const displayBio = document.getElementById('displayBio');
+        const displayAvatar = document.getElementById('displayAvatar');
+        const linksContainer = document.getElementById('linksContainer');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const copyProfileBtn = document.getElementById('copyProfileBtn');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // Render Profile Card
+        function renderProfile() {
+            displayName.textContent = appData.name;
+            displayHandle.textContent = appData.handle;
+            displayBio.textContent = appData.bio;
+            displayAvatar.src = appData.avatar;
+
+            linksContainer.innerHTML = '';
+            appData.links.forEach(link => {
+                const linkCard = document.createElement('a');
+                linkCard.href = link.url;
+                linkCard.target = "_blank";
+                linkCard.rel = "noopener noreferrer";
+                linkCard.className = `pixel-box p-4 rounded-none flex items-center justify-between cursor-pointer relative group`;
+                
+                linkCard.onclick = (e) => handleLinkClick(e, link);
+
+                const iconSvg = BRAND_SVGS[link.id] || `<i data-lucide="${link.icon}" class="w-5 h-5"></i>`;
+
+                linkCard.innerHTML = `
+                    <div class="flex items-center gap-3 z-10">
+                        <div class="w-10 h-10 bg-black border-2 border-pink-400 flex items-center justify-center shrink-0">
+                            ${iconSvg}
+                        </div>
+                        <div class="text-left">
+                            <div class="font-arcade text-xs text-pink-300 link-title group-hover:text-cyan-300 transition-colors">
+                                ${link.title}
+                            </div>
+                            <div class="text-[10px] text-slate-300 link-subtitle font-pixel mt-1 line-clamp-1">
+                                ${link.subtitle}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 z-10">
+                        <span class="text-[9px] font-arcade px-2 py-1 ${link.badgeColor} flex items-center gap-1">
+                            <span>EXP</span>
+                            <span id="click-count-${link.id}">${link.clicks}</span>
+                        </span>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                `;
+                linksContainer.appendChild(linkCard);
+            });
+
+            lucide.createIcons();
+        }
+
+        function handleLinkClick(event, link) {
+            link.clicks++;
+            saveData();
+            
+            const countEl = document.getElementById(`click-count-${link.id}`);
+            if (countEl) countEl.textContent = link.clicks;
+
+            showToast(`WARPING TO ${link.title.toUpperCase()}!`);
+        }
+
+        function saveData() {
+            localStorage.setItem('linkBioData', JSON.stringify(appData));
+        }
+
+        // Toast System
+        let toastTimeout;
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // Copy Profile URL
+        copyProfileBtn.addEventListener('click', () => {
+            const urlToCopy = window.location.href;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(urlToCopy).then(() => {
+                    showToast('PAGE LINK COPIED!');
+                }).catch(() => fallbackCopy(urlToCopy));
+            } else {
+                fallbackCopy(urlToCopy);
+            }
+        });
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('PAGE LINK COPIED!');
+        }
+
+        // Theme Toggle Logic
+        function updateThemeUI(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                themeIcon.setAttribute('data-lucide', 'sun');
+                themeIcon.className = 'w-4 h-4 text-amber-300';
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.setAttribute('data-lucide', 'moon');
+                themeIcon.className = 'w-4 h-4 text-indigo-900';
+            }
+            lucide.createIcons();
+        }
+
+        let isDarkMode = localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : true;
+        updateThemeUI(isDarkMode);
+
+        themeToggleBtn.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeUI(isDarkMode);
+            showToast(isDarkMode ? 'NIGHT MODE ACTIVATED 🌙' : 'DAY MODE ACTIVATED ☀️');
+        });
+
+        window.onload = function () {
+            initSpaceCanvas();
+            renderProfile();
+        };
+    </script>
+</body>
+</html>
